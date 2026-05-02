@@ -43,15 +43,26 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-        .rainbow-text {
-    background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
-    background-size: 400% 400%;
-    -webkit-background-clip: text;
-@keyframes rainbow-move {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+       .rainbow-text {
+            /* กำหนดสีรุ้งแบบไล่ระดับ */
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+            background-size: 400% 400%;
+            
+            /* คำสั่งสำคัญ: ทำให้พื้นหลังไปแสดงอยู่ในตัวอักษร */
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+            /* เรียกใช้ Animation ที่คุณเขียนไว้ */
+            animation: rainbow-move 5s ease infinite;
+            font-weight: bold;
+        }
+
+        @keyframes rainbow-move {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 .footer-credit {
     position: fixed;
     bottom: 10px;
