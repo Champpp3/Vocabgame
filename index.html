@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOCAB QUIZ </title>
+    <title>VOCAB QUIZ - STEM Edition</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,6 +14,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, push, query, orderByChild, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Firebase Config ของคุณ
         const firebaseConfig = {
             apiKey: "AIzaSyDoWDTu7AsocJiDO3pmmnt_mQuLVeCBHFE",
             authDomain: "vocab-fire-project.firebaseapp.com",
@@ -49,55 +50,57 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
+
         const vocabList = [
-    // Day 1-2: Basic & Emotion
-    {w: "Affectionate", m: "เมตตา/รักใคร่"}, {w: "adorable", m: "น่ารัก"}, {w: "amicable", m: "เป็นมิตร"},
-    {w: "outstanding", m: "โดดเด่น"}, {w: "exceptional", m: "ยอดเยี่ยม"}, {w: "privileges", m: "สิทธิพิเศษ"},
-    {w: "proposal", m: "ข้อเสนอ"}, {w: "approach", m: "แนวทาง"}, {w: "contributing", m: "การมีส่วนร่วม"},
-    {w: "appreciate", m: "เห็นคุณค่า"}, {w: "nutrition", m: "โภชนาการ"}, {w: "consumption", m: "การบริโภค"},
-    {w: "refined", m: "ขัดเกลา"}, {w: "lessen", m: "ลดลง"}, {w: "ample", m: "เหลือเฟือ"},
-    {w: "proper", m: "เหมาะสม"}, {w: "secluded", m: "สงบ/แยกตัว"}, {w: "potential", m: "ศักยภาพ"},
-    {w: "doubling", m: "เพิ่มเป็นสองเท่า"}, {w: "degrading", m: "เสื่อมโทรม"}, {w: "declining", m: "ลดลง"},
-    {w: "vital", m: "สำคัญยิ่ง"}, {w: "arid", m: "แห้งแล้ง"}, {w: "vicious", m: "ดุร้าย"},
-    {w: "engage in", m: "เข้าร่วม"}, {w: "intake", m: "การนำเข้า"}, {w: "notion", m: "ความคิด"},
-    {w: "reluctant", m: "ไม่เต็มใจ"}, {w: "estimate", m: "ประมาณการ"}, {w: "hasty", m: "เร่งรีบ"},
-    {w: "reject", m: "ปฏิเสธ"}, {w: "adopt", m: "นำมาใช้"}, {w: "transmitted", m: "ถ่ายทอด"},
-    {w: "fluently", m: "อย่างคล่องแคล่ว"}, {w: "operational", m: "ใช้งานได้"}, {w: "cope", m: "รับมือ"},
-    {w: "administrative", m: "การบริหาร"}, {w: "motivated", m: "มีแรงจูงใจ"}, {w: "merchandise", m: "สินค้า"},
-    {w: "deactivated", m: "ปิดการใช้งาน"}, {w: "established", m: "ก่อตั้งขึ้น"}, {w: "navigate", m: "นำทาง"},
-    {w: "journalist", m: "นักข่าว"}, {w: "replica", m: "ของจำลอง"}, {w: "withdrawals", m: "การถอน"},
-    {w: "criticize", m: "วิจารณ์"}, {w: "residents", m: "ผู้อยู่อาศัย"}, {w: "excitement", m: "ความตื่นเต้น"},
+            {w: "Affectionate", m: "เมตตา/รักใคร่"}, {w: "adorable", m: "น่ารัก"}, {w: "amicable", m: "เป็นมิตร"},
+            {w: "outstanding", m: "โดดเด่น"}, {w: "exceptional", m: "ยอดเยี่ยม"}, {w: "privileges", m: "สิทธิพิเศษ"},
+            {w: "proposal", m: "ข้อเสนอ"}, {w: "approach", m: "แนวทาง"}, {w: "contributing", m: "การมีส่วนร่วม"},
+            {w: "appreciate", m: "เห็นคุณค่า"}, {w: "nutrition", m: "โภชนาการ"}, {w: "consumption", m: "การบริโภค"},
+            {w: "refined", m: "ขัดเกลา"}, {w: "lessen", m: "ลดลง"}, {w: "ample", m: "เหลือเฟือ"},
+            {w: "proper", m: "เหมาะสม"}, {w: "secluded", m: "สงบ/แยกตัว"}, {w: "potential", m: "ศักยภาพ"},
+            {w: "doubling", m: "เพิ่มเป็นสองเท่า"}, {w: "degrading", m: "เสื่อมโทรม"}, {w: "declining", m: "ลดลง"},
+            {w: "vital", m: "สำคัญยิ่ง"}, {w: "arid", m: "แห้งแล้ง"}, {w: "vicious", m: "ดุร้าย"},
+            {w: "engage in", m: "เข้าร่วม"}, {w: "intake", m: "การนำเข้า"}, {w: "notion", m: "ความคิด"},
+            {w: "reluctant", m: "ไม่เต็มใจ"}, {w: "estimate", m: "ประมาณการ"}, {w: "hasty", m: "เร่งรีบ"},
+            {w: "reject", m: "ปฏิเสธ"}, {w: "adopt", m: "นำมาใช้"}, {w: "transmitted", m: "ถ่ายทอด"},
+            {w: "fluently", m: "อย่างคล่องแคล่ว"}, {w: "operational", m: "ใช้งานได้"}, {w: "cope", m: "รับมือ"},
+            {w: "administrative", m: "การบริหาร"}, {w: "motivated", m: "มีแรงจูงใจ"}, {w: "merchandise", m: "สินค้า"},
+            {w: "deactivated", m: "ปิดการใช้งาน"}, {w: "established", m: "ก่อตั้งขึ้น"}, {w: "navigate", m: "นำทาง"},
+            {w: "journalist", m: "นักข่าว"}, {w: "replica", m: "ของจำลอง"}, {w: "withdrawals", m: "การถอน"},
+            {w: "criticize", m: "วิจารณ์"}, {w: "residents", m: "ผู้อยู่อาศัย"}, {w: "excitement", m: "ความตื่นเต้น"},
+            {w: "anecdote", m: "เรื่องสั้น"}, {w: "fledgling", m: "มือใหม่"}, {w: "declared", m: "ประกาศ"},
+            {w: "miracles", m: "ปาฏิหาริย์"}, {w: "bestowed", m: "มอบให้"}, {w: "fabrication", m: "การปั้นแต่ง"},
+            {w: "subsequent", m: "ตามมา"}, {w: "interpret", m: "ตีความ"}, {w: "gradually", m: "ค่อยเป็นค่อยไป"},
+            {w: "gestures", m: "ท่าทาง"}, {w: "coincidences", m: "เรื่องบังเอิญ"}, {w: "convince", m: "โน้มน้าว"},
+            {w: "arranged", m: "จัดเตรียม"}, {w: "acquaintances", m: "คนรู้จัก"}, {w: "meddling", m: "ก้าวก่าย"},
+            {w: "convenient", m: "สะดวกสบาย"}, {w: "colleagues", m: "เพื่อนร่วมงาน"}, {w: "pseudonym", m: "นามแฝง"},
+            {w: "tragedy", m: "โศกนาฏกรรม"}, {w: "previously", m: "ก่อนหน้านี้"}, {w: "indicates", m: "ระบุ/บ่งบอก"},
+            {w: "emerges", m: "ปรากฏออกมา"}, {w: "invisible", m: "มองไม่เห็น"}, {w: "consequently", m: "ดังนั้น"},
+            {w: "hereditary", m: "ทางพันธุกรรม"}, {w: "devised", m: "ประดิษฐ์ขึ้น"}, {w: "accomplished", m: "ทำสำเร็จ"},
+            {w: "ecological", m: "ระบบนิเวศ"}, {w: "combustion", m: "การเผาไหม้"}, {w: "climatic", m: "เกี่ยวกับภูมิอากาศ"},
+            {w: "terrestrial", m: "บนบก"}, {w: "substantial", m: "มากมาย/สำคัญ"}, {w: "component", m: "ส่วนประกอบ"},
+            {w: "diversity", m: "ความหลากหลาย"}, {w: "emissions", m: "การปล่อยก๊าซ"}, {w: "industrial", m: "อุตสาหกรรม"},
+            {w: "agriculture", m: "เกษตรกรรม"}, {w: "profound", m: "ลึกซึ้ง"}, {w: "compulsory", m: "บังคับ"},
+            {w: "reveal", m: "เปิดเผย"}, {w: "spontaneously", m: "โดยฉับพลัน"}, {w: "clotting", m: "การแข็งตัวของเลือด"},
+            {w: "lethal", m: "ถึงตาย"}, {w: "chronic", m: "เรื้อรัง"}, {w: "defective", m: "บกพร่อง"},
+            {w: "pesticide", m: "ยาฆ่าแมลง"}, {w: "extinction", m: "การสูญพันธุ์"}, {w: "evaporate", m: "ระเหย"},
+            {w: "contamination", m: "การปนเปื้อน"}, {w: "disrupt", m: "ขัดขวาง"}, {w: "condense", m: "ควบแน่น"},
+            {w: "saturated", m: "อิ่มตัว"}, {w: "diffusion", m: "การแพร่"}, {w: "hygienic", m: "ถูกสุขอนามัย"},
+            {w: "reservoir", m: "อ่างเก็บน้ำ"}, {w: "ventilate", m: "ระบายอากาศ"}, {w: "steadily", m: "อย่างมั่นคง"}
+        ];
 
-    // Day 3-5: Academic & Social
-    {w: "anecdote", m: "เรื่องสั้น"}, {w: "fledgling", m: "มือใหม่"}, {w: "declared", m: "ประกาศ"},
-    {w: "miracles", m: "ปาฏิหาริย์"}, {w: "bestowed", m: "มอบให้"}, {w: "fabrication", m: "การปั้นแต่ง"},
-    {w: "subsequent", m: "ตามมา"}, {w: "interpret", m: "ตีความ"}, {w: "gradually", m: "ค่อยเป็นค่อยไป"},
-    {w: "gestures", m: "ท่าทาง"}, {w: "coincidences", m: "เรื่องบังเอิญ"}, {w: "convince", m: "โน้มน้าว"},
-    {w: "arranged", m: "จัดเตรียม"}, {w: "acquaintances", m: "คนรู้จัก"}, {w: "meddling", m: "ก้าวก่าย"},
-    {w: "convenient", m: "สะดวกสบาย"}, {w: "colleagues", m: "เพื่อนร่วมงาน"}, {w: "pseudonym", m: "นามแฝง"},
-    {w: "tragedy", m: "โศกนาฏกรรม"}, {w: "previously", m: "ก่อนหน้านี้"}, {w: "indicates", m: "ระบุ/บ่งบอก"},
-    {w: "emerges", m: "ปรากฏออกมา"}, {w: "invisible", m: "มองไม่เห็น"}, {w: "consequently", m: "ดังนั้น"},
-    {w: "hereditary", m: "ทางพันธุกรรม"}, {w: "devised", m: "ประดิษฐ์ขึ้น"}, {w: "accomplished", m: "ทำสำเร็จ"},
-
-    // Day 7-10: STEM & Environment (เน้นที่เรียนใน ม.5)
-    {w: "ecological", m: "ระบบนิเวศ"}, {w: "combustion", m: "การเผาไหม้"}, {w: "climatic", m: "เกี่ยวกับภูมิอากาศ"},
-    {w: "terrestrial", m: "บนบก"}, {w: "substantial", m: "มากมาย/สำคัญ"}, {w: "component", m: "ส่วนประกอบ"},
-    {w: "diversity", m: "ความหลากหลาย"}, {w: "emissions", m: "การปล่อยก๊าซ"}, {w: "industrial", m: "อุตสาหกรรม"},
-    {w: "agriculture", m: "เกษตรกรรม"}, {w: "profound", m: "ลึกซึ้ง"}, {w: "compulsory", m: "บังคับ"},
-    {w: "reveal", m: "เปิดเผย"}, {w: "spontaneously", m: "โดยฉับพลัน"}, {w: "clotting", m: "การแข็งตัวของเลือด"},
-    {w: "lethal", m: "ถึงตาย"}, {w: "chronic", m: "เรื้อรัง"}, {w: "defective", m: "บกพร่อง"},
-    {w: "pesticide", m: "ยาฆ่าแมลง"}, {w: "extinction", m: "การสูญพันธุ์"}, {w: "evaporate", m: "ระเหย"},
-    {w: "contamination", m: "การปนเปื้อน"}, {w: "disrupt", m: "ขัดขวาง"}, {w: "condense", m: "ควบแน่น"},
-    {w: "saturated", m: "อิ่มตัว"}, {w: "diffusion", m: "การแพร่"}, {w: "hygienic", m: "ถูกสุขอนามัย"},
-    {w: "reservoir", m: "อ่างเก็บน้ำ"}, {w: "ventilate", m: "ระบายอากาศ"}, {w: "steadily", m: "อย่างมั่นคง"}
-];
+        // แก้ไข: สร้าง FULL_VOCAB จาก vocabList
+        const FULL_VOCAB = vocabList.reduce((acc, curr) => {
+            acc[curr.w] = curr.m;
+            return acc;
+        }, {});
 
         function App() {
             const [view, setView] = useState('MENU');
             const [isDark, setIsDark] = useState(true);
             const [showSetting, setShowSetting] = useState(false);
             const [showRanking, setShowRanking] = useState(false);
-            const [showInfo, setShowInfo] = useState(false); // เพิ่มสถานะสำหรับปุ่ม ?
+            const [showInfo, setShowInfo] = useState(false);
             const [searchTerm, setSearchTerm] = useState('');
             const [volume, setVolume] = useState(0.5);
             const [playerName, setPlayerName] = useState('');
@@ -140,32 +143,33 @@
                 return `${name} ${count}`;
             };
 
-            const startGame = async () => {
-                if (!playerName.trim()) return alert("กรุณาใส่ชื่อก่อนครับ");
-                const uniqueName = await resolveName(playerName.trim());
-                setFinalName(uniqueName);
-                setView('PLAY');
-                setScore(0);
-                nextQuestion();
-                if (bgMusicRef.current) {
-                    bgMusicRef.current.volume = volume;
-                    bgMusicRef.current.play();
-                }
-            };
-
             const nextQuestion = () => {
                 const keys = Object.keys(FULL_VOCAB);
                 const word = keys[Math.floor(Math.random() * keys.length)];
                 const correct = FULL_VOCAB[word];
                 let choices = [correct];
                 while(choices.length < 4) {
-                    const r = Object.values(FULL_VOCAB)[Math.floor(Math.random() * Object.keys(FULL_VOCAB).length)];
+                    const allMeanings = Object.values(FULL_VOCAB);
+                    const r = allMeanings[Math.floor(Math.random() * allMeanings.length)];
                     if(!choices.includes(r)) choices.push(r);
                 }
                 setOptions(choices.sort(() => Math.random() - 0.5));
                 setCurrentWord(word);
                 setCorrectChoice(correct);
                 setAnswered(false);
+            };
+
+            const startGame = async () => {
+                if (!playerName.trim()) return alert("กรุณาใส่ชื่อก่อนครับ");
+                const uniqueName = await resolveName(playerName.trim());
+                setFinalName(uniqueName);
+                setScore(0);
+                nextQuestion();
+                setView('PLAY');
+                if (bgMusicRef.current) {
+                    bgMusicRef.current.volume = volume;
+                    bgMusicRef.current.play().catch(e => console.log("Music play blocked"));
+                }
             };
 
             const handleAnswer = (choice) => {
@@ -183,9 +187,10 @@
                     const newScoreData = { name: finalName, score, timestamp: Date.now() };
                     const { ref, push, set } = window.dbUtils;
                     if (score > 0) set(push(ref(window.db, 'scores')), newScoreData);
+                    
                     const tempBoard = [...globalBoard, newScoreData].sort((a, b) => b.score - a.score);
                     const rank = tempBoard.findIndex(item => item.name === finalName && item.score === score) + 1;
-                    setCurrentRank(rank);
+                    setCurrentRank(rank || tempBoard.length);
                     setTimeout(() => setView('GAMEOVER'), 1000);
                 }
             };
@@ -207,7 +212,7 @@
                         <div className="w-full max-w-md glass p-12 rounded-[3rem] text-center anim-in">
                             <h1 className="text-5xl font-black italic mb-2 text-sky-500">VOCAB</h1>
                             <h1 className="text-4xl font-black mb-10 tracking-widest uppercase">QUIZ</h1>
-                            <input className="w-full p-5 bg-white/5 rounded-2xl mb-6 text-center text-xl font-bold border border-white/10 outline-none" placeholder="ชื่อผู้เล่น" value={playerName} onChange={e => setPlayerName(e.target.value)} />
+                            <input className="w-full p-5 bg-white/5 rounded-2xl mb-6 text-center text-xl font-bold border border-white/10 outline-none text-white" placeholder="ชื่อผู้เล่น" value={playerName} onChange={e => setPlayerName(e.target.value)} />
                             <button onClick={startGame} className="w-full py-5 btn-primary rounded-3xl font-black text-2xl shadow-lg">Play</button>
                             
                             <div className="mt-6 flex items-center justify-center gap-4">
@@ -291,9 +296,9 @@
                                 <div className="w-20 h-20 bg-gradient-to-br from-sky-400 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)] text-4xl">🤖</div>
                                 <h3 className="text-xl font-black mb-2 text-sky-400 uppercase tracking-wider">AI Powered</h3>
                                 <p className="text-slate-300 leading-relaxed mb-8 text-sm">
-                                     <span className="text-white font-bold"></span>  <br/>
-                                    ใช้ <span className="text-sky-400 font-bold">Gemini 1.5 Pro</span> <br/>
-                                คำศัพท์จาก STEM
+                                    สร้างโดย <span className="text-white font-bold">พรเมศ</span> <br/>
+                                    ใช้ <span className="text-sky-400 font-bold">Gemini 3 Flash</span> <br/>
+                                    คลังคำศัพท์วิชาการ & STEM ม.5
                                 </p>
                                 <button onClick={() => setShowInfo(false)} className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-white rounded-2xl font-black transition-all shadow-lg active:scale-95">เข้าใจแล้ว</button>
                             </div>
