@@ -49,7 +49,48 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
-        const FULL_VOCAB = { "Affectionate": "เมตตา/รักใคร่", "adorable": "น่ารัก", "amicable": "เป็นมิตร", "outstanding": "โดดเด่น", "exceptional": "ยอดเยี่ยม", "privileges": "สิทธิพิเศษ", "proposal": "ข้อเสนอ", "approach": "แนวทาง", "contributing": "การมีส่วนร่วม", "appreciate": "เห็นคุณค่า" };
+        const vocabList = [
+    // Day 1-2: Basic & Emotion
+    {w: "Affectionate", m: "เมตตา/รักใคร่"}, {w: "adorable", m: "น่ารัก"}, {w: "amicable", m: "เป็นมิตร"},
+    {w: "outstanding", m: "โดดเด่น"}, {w: "exceptional", m: "ยอดเยี่ยม"}, {w: "privileges", m: "สิทธิพิเศษ"},
+    {w: "proposal", m: "ข้อเสนอ"}, {w: "approach", m: "แนวทาง"}, {w: "contributing", m: "การมีส่วนร่วม"},
+    {w: "appreciate", m: "เห็นคุณค่า"}, {w: "nutrition", m: "โภชนาการ"}, {w: "consumption", m: "การบริโภค"},
+    {w: "refined", m: "ขัดเกลา"}, {w: "lessen", m: "ลดลง"}, {w: "ample", m: "เหลือเฟือ"},
+    {w: "proper", m: "เหมาะสม"}, {w: "secluded", m: "สงบ/แยกตัว"}, {w: "potential", m: "ศักยภาพ"},
+    {w: "doubling", m: "เพิ่มเป็นสองเท่า"}, {w: "degrading", m: "เสื่อมโทรม"}, {w: "declining", m: "ลดลง"},
+    {w: "vital", m: "สำคัญยิ่ง"}, {w: "arid", m: "แห้งแล้ง"}, {w: "vicious", m: "ดุร้าย"},
+    {w: "engage in", m: "เข้าร่วม"}, {w: "intake", m: "การนำเข้า"}, {w: "notion", m: "ความคิด"},
+    {w: "reluctant", m: "ไม่เต็มใจ"}, {w: "estimate", m: "ประมาณการ"}, {w: "hasty", m: "เร่งรีบ"},
+    {w: "reject", m: "ปฏิเสธ"}, {w: "adopt", m: "นำมาใช้"}, {w: "transmitted", m: "ถ่ายทอด"},
+    {w: "fluently", m: "อย่างคล่องแคล่ว"}, {w: "operational", m: "ใช้งานได้"}, {w: "cope", m: "รับมือ"},
+    {w: "administrative", m: "การบริหาร"}, {w: "motivated", m: "มีแรงจูงใจ"}, {w: "merchandise", m: "สินค้า"},
+    {w: "deactivated", m: "ปิดการใช้งาน"}, {w: "established", m: "ก่อตั้งขึ้น"}, {w: "navigate", m: "นำทาง"},
+    {w: "journalist", m: "นักข่าว"}, {w: "replica", m: "ของจำลอง"}, {w: "withdrawals", m: "การถอน"},
+    {w: "criticize", m: "วิจารณ์"}, {w: "residents", m: "ผู้อยู่อาศัย"}, {w: "excitement", m: "ความตื่นเต้น"},
+
+    // Day 3-5: Academic & Social
+    {w: "anecdote", m: "เรื่องสั้น"}, {w: "fledgling", m: "มือใหม่"}, {w: "declared", m: "ประกาศ"},
+    {w: "miracles", m: "ปาฏิหาริย์"}, {w: "bestowed", m: "มอบให้"}, {w: "fabrication", m: "การปั้นแต่ง"},
+    {w: "subsequent", m: "ตามมา"}, {w: "interpret", m: "ตีความ"}, {w: "gradually", m: "ค่อยเป็นค่อยไป"},
+    {w: "gestures", m: "ท่าทาง"}, {w: "coincidences", m: "เรื่องบังเอิญ"}, {w: "convince", m: "โน้มน้าว"},
+    {w: "arranged", m: "จัดเตรียม"}, {w: "acquaintances", m: "คนรู้จัก"}, {w: "meddling", m: "ก้าวก่าย"},
+    {w: "convenient", m: "สะดวกสบาย"}, {w: "colleagues", m: "เพื่อนร่วมงาน"}, {w: "pseudonym", m: "นามแฝง"},
+    {w: "tragedy", m: "โศกนาฏกรรม"}, {w: "previously", m: "ก่อนหน้านี้"}, {w: "indicates", m: "ระบุ/บ่งบอก"},
+    {w: "emerges", m: "ปรากฏออกมา"}, {w: "invisible", m: "มองไม่เห็น"}, {w: "consequently", m: "ดังนั้น"},
+    {w: "hereditary", m: "ทางพันธุกรรม"}, {w: "devised", m: "ประดิษฐ์ขึ้น"}, {w: "accomplished", m: "ทำสำเร็จ"},
+
+    // Day 7-10: STEM & Environment (เน้นที่เรียนใน ม.5)
+    {w: "ecological", m: "ระบบนิเวศ"}, {w: "combustion", m: "การเผาไหม้"}, {w: "climatic", m: "เกี่ยวกับภูมิอากาศ"},
+    {w: "terrestrial", m: "บนบก"}, {w: "substantial", m: "มากมาย/สำคัญ"}, {w: "component", m: "ส่วนประกอบ"},
+    {w: "diversity", m: "ความหลากหลาย"}, {w: "emissions", m: "การปล่อยก๊าซ"}, {w: "industrial", m: "อุตสาหกรรม"},
+    {w: "agriculture", m: "เกษตรกรรม"}, {w: "profound", m: "ลึกซึ้ง"}, {w: "compulsory", m: "บังคับ"},
+    {w: "reveal", m: "เปิดเผย"}, {w: "spontaneously", m: "โดยฉับพลัน"}, {w: "clotting", m: "การแข็งตัวของเลือด"},
+    {w: "lethal", m: "ถึงตาย"}, {w: "chronic", m: "เรื้อรัง"}, {w: "defective", m: "บกพร่อง"},
+    {w: "pesticide", m: "ยาฆ่าแมลง"}, {w: "extinction", m: "การสูญพันธุ์"}, {w: "evaporate", m: "ระเหย"},
+    {w: "contamination", m: "การปนเปื้อน"}, {w: "disrupt", m: "ขัดขวาง"}, {w: "condense", m: "ควบแน่น"},
+    {w: "saturated", m: "อิ่มตัว"}, {w: "diffusion", m: "การแพร่"}, {w: "hygienic", m: "ถูกสุขอนามัย"},
+    {w: "reservoir", m: "อ่างเก็บน้ำ"}, {w: "ventilate", m: "ระบายอากาศ"}, {w: "steadily", m: "อย่างมั่นคง"}
+];
 
         function App() {
             const [view, setView] = useState('MENU');
