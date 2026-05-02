@@ -47,13 +47,6 @@
     background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
     background-size: 400% 400%;
     -webkit-background-clip: text;
-            <div class="footer-credit">
-    Ig: <span class="rainbow-text">Champ_pp3</span>
-</div>
-    -webkit-text-fill-color: transparent;
-    animation: rainbow-move 5s ease infinite;
-    font-weight: bold;
-}
 @keyframes rainbow-move {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -70,6 +63,9 @@
 </head>
 <body class="theme-dark">
     <div id="root"></div>
+<div class="footer-credit">
+    Ig: <span class="rainbow-text">Champ_pp3</span>
+</div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
