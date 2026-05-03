@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOCAB QUIZ - STEM Edition</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, query, orderByChild, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoWDTu7AsocJiDO3pmmnt_mQuLVeCBHFE",
+            authDomain: "vocab-fire-project.firebaseapp.com",
+            databaseURL: "https://vocab-fire-project-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "vocab-fire-project",
+            storageBucket: "vocab-fire-project.firebasestorage.app",
+            messagingSenderId: "431918734336",
+            appId: "1:431918734336:web:bb98ee795f635c0b09a259"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            window.db = db;
+            window.dbUtils = { ref, set, onValue, push, query, orderByChild, get };
+        } catch (e) { window.db = null; }
+    </script>
+
+    <style>
+        body { font-family: 'Kanit', sans-serif; transition: all 0.3s ease; overflow: hidden; }
+        .theme-dark { background: #020617; color: white; }
+        .theme-light { background: #f0f9ff; color: #0f172a; }
+        .glass { backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .theme-dark .glass { background: rgba(15, 23, 42, 0.8); }
+        .theme-light .glass { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.1); }
+        .btn-primary { background: linear-gradient(to right, #0284c7, #06b6d4); color: white; }
+        .rainbow-text {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-move 5s ease infinite;
+        }
+        @keyframes rainbow-move { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .footer-credit { position: fixed; bottom: 10px; left: 10px; font-size: 14px; z-index: 9999; }
+        .anim-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="theme-dark">
+    <div id="root"></div>
+    <div class="footer-credit"><span class="rainbow-text font-black text-lg">ใช้ Gemini ทำ</span></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // รวมคำศัพท์ Day 1 - 10 (แปลไทยแบบเน้นความหมายหลัก)
+        const vocabData = {
+            "Affectionate": "เมตตา/รักใคร่", "adorable": "น่ารัก", "amicable": "เป็นมิตร", "outstanding": "โดดเด่น", "exceptional": "ยอดเยี่ยม",
+            "privileges": "สิทธิพิเศษ", "proposal": "ข้อเสนอ", "approach": "แนวทาง", "contributing": "การมีส่วนร่วม", "appreciate": "เห็นคุณค่า",
+            "nutrition": "โภชนาการ", "consumption": "การบริโภค", "refined": "ขัดเกลา/ละเอียด", "lessen": "ลดลง", "ample": "เหลือเฟือ",
+            "proper": "เหมาะสม", "secluded": "สงบ/แยกตัว", "potential": "ศักยภาพ", "doubling": "เพิ่มสองเท่า", "degrading": "เสื่อมโทรม",
+            "declining": "ลดลง", "vital": "สำคัญยิ่ง", "arid": "แห้งแล้ง", "vicious": "ดุร้าย", "engage in": "เข้าร่วม/ทำ",
+            "intake": "ปริมาณที่กินเข้าไป", "notion": "ความคิด/ความเชื่อ", "reluctant": "ไม่เต็มใจ", "estimate": "ประมาณการ", "hasty": "เร่งรีบ",
+            "reject": "ปฏิเสธ", "adopt": "นำมาใช้/รับเลี้ยง", "transmitted": "ถ่ายทอด/ส่งผ่าน", "fluently": "อย่างคล่องแคล่ว", "operational": "ใช้งานได้",
+            "cope": "รับมือ", "administrative": "ด้านการบริหาร", "motivated": "มีแรงจูงใจ", "merchandise": "สินค้า", "upon": "เมื่อ/บน",
+            "deactivated": "ปิดใช้งาน", "established": "ก่อตั้งแล้ว/มั่นคง", "beachfront": "ริมหาด", "shore": "ชายฝั่ง", "navigate": "นำทาง",
+            "nation": "ประเทศชาติ", "journalist": "นักข่าว", "within": "ภายใน", "replica": "ของจำลอง", "withdrawals": "การถอน",
+            "criticize": "วิจารณ์", "residents": "ผู้อยู่อาศัย", "excitement": "ความตื่นเต้น", "skittish": "ขี้ตกใจ", "cower": "หมอบคลาน/กลัว",
+            "disorders": "ความผิดปกติ", "refused": "ปฏิเสธ", "constantly": "อย่างต่อเนื่อง", "constricted": "ตีบแคบ", "morbid": "ผิดปกติ/น่ากลัว",
+            "diagnosed": "วินิจฉัย", "swallow": "กลืน", "intensified": "รุนแรงขึ้น", "interpreting": "การตีความ", "irritability": "ความหงุดหงิด",
+            "defiance": "การท้าทาย", "curiosity": "ความอยากรู้อยากเห็น", "executive": "ผู้บริหาร", "attendant": "ผู้ดูแล/พนักงาน", "paralyzed": "เป็นอัมพาต",
+            "ceiling": "เพดาน", "choking": "การสำลัก", "Obsessed": "หมกมุ่น", "mentioned": "ที่กล่าวถึง", "symptoms": "อาการ",
+            "symbol": "สัญลักษณ์", "inferred": "สรุป/อนุมาน", "anecdote": "เรื่องสั้น/เกร็ด", "fledgling": "มือใหม่/นกหัดบิน", "branches": "กิ่งก้าน/สาขา",
+            "thus": "ดังนั้น", "declared": "ประกาศ", "miracles": "ปาฏิหาริย์", "bestowed": "มอบให้", "lonesome": "โดดเดี่ยว",
+            "originally": "ดั้งเดิม", "fabrication": "การปั้นแต่ง", "subsequent": "ตามมา", "interpret": "ตีความ", "gradually": "ค่อยๆ",
+            "gestures": "ท่าทาง", "shame": "ความอับอาย", "coincidences": "ความบังเอิญ", "bumps": "การชน/กระแทก", "convince": "โน้มน้าว",
+            "figured": "คิดออก/คำนวณ", "arranged": "จัดเตรียม", "introduction": "การแนะนำ", "harbingers": "ลางบอกเหตุ", "college": "วิทยาลัย",
+            "acquaintances": "คนรู้จัก", "obviously": "อย่างเห็นได้ชัด", "meddling": "การก้าวก่าย", "flatter": "ประจบ", "sketched": "ร่างภาพ",
+            "convenient": "สะดวก", "pawn": "ตัวจำนำ/เบี้ย", "colleagues": "เพื่อนร่วมงาน", "secretive": "มีความลับ", "indeed": "จริงๆ แล้ว",
+            "paw": "อุ้งเท้า", "Mellow": "นุ่มนวล/รื่นรมย์", "impression": "ความประทับใจ", "pseudonym": "นามแฝง", "virtue": "คุณธรรม",
+            "enchanting": "น่าหลงใหล", "rumor": "ข่าวลือ", "refute": "คัดค้าน", "caring": "ซึ่งเอาใจใส่", "recruited": "รับสมัคร",
+            "fuming": "โกรธจัด", "bothered": "รบกวน/รำคาญ", "tragedy": "โศกนาฏกรรม", "speculation": "การคาดเดา", "encountered": "เผชิญหน้า",
+            "previously": "ก่อนหน้านี้", "interfere": "แทรกแซง", "predecessor": "ผู้มาก่อน", "extend": "ขยายออก", "instructed": "ได้รับคำสั่ง",
+            "attempts": "ความพยายาม", "futile": "ไร้ประโยชน์", "mage": "จอมเวทย์", "previous": "ก่อนหน้า", "indicates": "บ่งบอก",
+            "figure": "รูปร่าง/ตัวเลข", "logged": "บันทึก", "occurred": "เกิดขึ้น", "pity": "ความสงสาร", "enhance": "ทำให้ดีขึ้น",
+            "emerges": "ปรากฏออกมา", "seemingly": "ดูเหมือนว่า", "condemned": "ถูกประนาม", "Christ": "พระคริสต์", "invisible": "มองไม่เห็น",
+            "possession": "การครอบครอง", "consequently": "ผลที่ตามมา", "ripened": "สุกงอม", "slightest": "น้อยที่สุด", "afterwards": "หลังจากนั้น",
+            "propagated": "เผยแพร่", "underdeveloped": "ด้อยพัฒนา", "naked eye": "ตาเปล่า", "devious": "คดเคี้ยว/เล่ห์เหลี่ยม", "stacked": "ซ้อนกัน",
+            "burst": "ระเบิดออก", "involvement": "การเกี่ยวข้อง", "coast": "ชายฝั่ง", "forbidden": "ต้องห้าม", "hereditary": "ทางพันธุกรรม",
+            "illnesses": "ความเจ็บป่วย", "devised": "ประดิษฐ์ขึ้น", "secure": "ปลอดภัย/มั่นคง", "gust": "ลมกระโชก", "tireless": "ไม่รู้จักเหน็ดเหนื่อย",
+            "pleasant": "น่านิยม/เพลิน", "accomplished": "สำเร็จ", "demonstrate": "สาธิต", "diplomatic": "ทางการทูต", "perception": "การรับรู้",
+            "heritage": "มรดก", "describes": "บรรยาย", "state pension": "เงินบำนาญ", "Wholly": "โดยทั้งหมด", "spectacular": "น่าตื่นตาตื่นใจ",
+            "all aboard": "ทุกคนขึ้นเรือ/รถ", "procrastinating": "ผลัดวันประกันพรุ่ง", "particular": "โดยเฉพาะ", "plea": "คำร้องขอ", "energetic": "กระฉับกระเฉง",
+            "enthusiastic": "กระตือรือร้น", "fluent": "คล่องแคล่ว", "anticipate": "คาดหวัง", "forecast": "พยากรณ์", "predict": "ทำนาย",
+            "imply": "บอกเป็นนัย", "attentive": "ใส่ใจ", "elective": "วิชาเลือก", "trousers": "กางเกงขายาว", "loan": "เงินกู้",
+            "caution": "ความระมัดระวัง", "manufactured": "ที่ผลิตขึ้น", "unrestrained": "ไม่ถูกจำกัด", "restrained": "ถูกจำกัด", "expand": "แผ่ขยาย",
+            "factual": "ตามข้อเท็จจริง", "sensible": "มีเหตุผล", "external": "ภายนอก", "advent": "การมาถึง", "excessive": "มากเกินไป",
+            "arrival": "การมาถึง", "commencement": "การเริ่มต้น", "elegance": "ความสง่างาม", "prudence": "ความรอบคอบ", "eloquence": "การมีวาทศิลป์",
+            "equivalent": "เท่าเทียมกัน", "counterpart": "คู่ขนาน/คู่เทียบ", "preserve": "อนุรักษ์", "prevent": "ป้องกัน", "offending": "การทำผิด",
+            "spread": "แพร่กระจาย", "election": "การเลือกตั้ง", "appearance": "รูปลักษณ์", "comparable": "เทียบเคียงได้", "ensure": "ทำให้แน่ใจ",
+            "Traditional": "แบบดั้งเดิม", "sort": "ชนิด/ประเภท", "praise": "คำชม", "breathing": "การหายใจ", "taught": "สอนแล้ว",
+            "determination": "ความมุ่งมั่น", "discipline": "วินัย", "evident": "ชัดเจน", "sniffing": "การดมกลิ่น", "instance": "ตัวอย่าง/กรณี",
+            "divided": "แบ่งแยก", "spoiling": "การทำเสีย", "accustomed": "คุ้นเคย", "scenario": "สถานการณ์", "vomits": "อาเจียน",
+            "appetite": "ความอยากอาหาร", "veterinarian": "สัตวแพทย์", "adjustment": "การปรับเปลี่ยน", "diabetes": "โรคเบาหวาน", "ailments": "ความเจ็บป่วย",
+            "ecological": "ทางนิเวศวิทยา", "concentrate": "จดจ่อ", "documented": "ถูกบันทึก", "alteration": "การเปลี่ยนแปลง", "combustion": "การเผาไหม้",
+            "climatic": "ทางภูมิอากาศ", "terrestrial": "บนบก", "altered": "ที่เปลี่ยนไป", "substantial": "สำคัญ/มากมาย", "component": "ส่วนประกอบ",
+            "diversity": "ความหลากหลาย", "emissions": "การปล่อยก๊าซ", "industrial": "ทางอุตสาหกรรม", "agriculture": "เกษตรกรรม", "profound": "ลึกซึ้ง",
+            "implications": "ความหมายแฝง/ผลที่ตามมา", "compulsory": "บังคับ", "reveal": "เปิดเผย", "Typically": "โดยปกติ", "conscious": "มีสติ",
+            "shelter": "ที่พักพิง", "charitable": "ใจบุญ", "moved": "ประทับใจ", "separate": "แยกออกจากกัน", "turmoil": "ความปั่นป่วน",
+            "economics": "เศรษฐศาสตร์", "economical": "ประหยัด", "rally": "การชุมนุม", "referred to": "ถูกอ้างถึง", "controversially": "อย่างเป็นที่ขัดแย้ง",
+            "bleeding": "เลือดไหล", "spontaneously": "โดยธรรมชาติ/ทันที", "clotting": "การแข็งตัวของเลือด", "prolong": "ยืดเวลา", "obvious": "ชัดเจน",
+            "lethal": "อันตรายถึงตาย", "chronic": "เรื้อรัง", "crippled": "พิการ", "cure": "การรักษา", "constant": "คงที่",
+            "administered": "การจัดการ/จ่ายยา", "inherits": "สืบทอด", "defective": "บกพร่อง", "severity": "ความรุนแรง", "mild": "เบาบาง",
+            "moderate": "ปานกลาง", "deficit": "การขาดแคลน", "tabloids": "หนังสือพิมพ์แท็บลอยด์", "exceeded": "เกินขีดจำกัด", "emit": "ปล่อยออกมา",
+            "casual": "ไม่เป็นทางการ", "narrate": "บรรยาย/เล่า", "exhibit": "แสดงนิทรรศการ", "inhabit": "อาศัยอยู่", "dwell": "อาศัย",
+            "Reside": "อยู่อาศัย", "situate": "ตั้งอยู่ที่", "construction": "การก่อสร้าง", "satisfied": "พอใจ", "competition": "การแข่งขัน",
+            "statement": "แถลงการณ์", "whether": "หรือไม่", "considerably": "อย่างมาก", "notorious": "ฉาวโฉ่", "pesticide": "ยาฆ่าแมลง",
+            "persistence": "ความเพียร", "extinction": "การสูญพันธุ์", "elaborate": "ละเอียดลออ", "encouraging": "ซึ่งให้กำลังใจ", "bald": "ล้าน/โล่ง",
+            "intact": "คงอยู่ครบ", "evaporate": "ระเหย", "contamination": "การปนเปื้อน", "disrupt": "ขัดขวาง", "phase out": "ค่อยๆ เลิกใช้",
+            "treaty": "สนธิสัญญา", "cooperative": "ร่วมมือกัน", "obstructive": "ซึ่งขัดขวาง", "manipulative": "ซึ่งบงการ", "trivial": "เล็กน้อย/ไม่สำคัญ",
+            "menace": "ภัยคุกคาม", "threat": "การข่มขู่", "enacted": "ออกกฎหมาย", "incident": "เหตุการณ์", "grander": "ยิ่งใหญ่กว่า",
+            "condense": "ควบแน่น", "globe": "โลก", "gather": "รวบรวม", "saturated": "อิ่มตัว", "journal": "วารสาร",
+            "ruins": "ซากปรักหักพัง", "beholding": "การมองดู", "embark": "เริ่มเดินทาง", "invention": "การประดิษฐ์", "sublime": "สูงส่ง",
+            "proportion": "สัดส่วน", "rearrange": "จัดระเบียบใหม่", "chubby": "อวบ", "stout": "ล่ำสัน", "obese": "อ้วนมาก",
+            "meager": "ขาดแคลน", "mercifully": "อย่างเมตตา", "savage": "ป่าเถื่อน", "benevolent": "ใจดี", "compassionate": "เห็นอกเห็นใจ",
+            "vulnerable": "อ่อนแอ/เสี่ยง", "immune": "มีภูมิคุ้มกัน", "susceptible": "หวั่นไหว/รับอิทธิพลได้ง่าย", "supposition": "การสมมติ", "presumption": "การสันนิษฐาน",
+            "contingency": "เหตุบังเอิญ", "rage": "ความโกรธแค้น", "wrath": "ความโกรธ", "felicity": "ความสุข", "industrious": "ขยัน",
+            "idle": "ขี้เกียจ/ว่างเปล่า", "impartial": "เป็นกลาง", "biased": "ลำเอียง", "austere": "เคร่งครัด", "hospitable": "เอื้อเฟื้อ",
+            "gracious": "สง่างาม/ใจดี", "strict": "เข้มงวด", "gauntlet": "ถุงมือเหล็ก/การทดสอบ", "crumb": "เศษขนมปัง", "splinter": "เสี้ยน",
+            "temptation": "การล่อใจ", "diffusion": "การแพร่กระจาย", "behave": "ประพฤติตน", "improvise": "แสดงสด/ด้นสด", "frustrated": "หงุดหงิด/ท้อแท้",
+            "dissatisfied": "ไม่พอใจ", "surrounding": "รอบข้าง", "filthy": "สกปรก", "hygienic": "ถูกสุขอนามัย", "disinfected": "ฆ่าเชื้อแล้ว",
+            "reservoir": "อ่างเก็บน้ำ", "unusable": "ใช้งานไม่ได้", "complaint": "การร้องเรียน", "ventilate": "ระบายอากาศ", "capable": "สามารถ",
+            "predated": "เกิดก่อน", "cereal": "ธัญพืช", "upset": "เสียใจ/หงุดหงิด", "opinions": "ความคิดเห็น", "opportunity": "โอกาส",
+            "in case": "ในกรณีที่", "complicated": "ซับซ้อน", "surroundings": "สภาพแวดล้อม", "basin": "อ่าง/ลุ่มน้ำ", "a dam": "เขื่อน",
+            "as a result": "ผลลัพธ์คือ", "used as": "ถูกใช้เป็น", "crawl": "คลาน", "attic": "ห้องใต้หลังคา", "steadily": "อย่างมั่นคง",
+            "render": "ทำให้เป็น/แสดงผล"
+        };
+
+        function App() {
+            const [view, setView] = useState('MENU');
+            const [isDark, setIsDark] = useState(true);
+            const [showSetting, setShowSetting] = useState(false);
+            const [isPractice, setIsPractice] = useState(false);
+            const [showRanking, setShowRanking] = useState(false);
+            const [playerName, setPlayerName] = useState('');
+            const [score, setScore] = useState(0);
+            const [currentWord, setCurrentWord] = useState(null);
+            const [options, setOptions] = useState([]);
+            const [answered, setAnswered] = useState(false);
+            const [correctChoice, setCorrectChoice] = useState(null);
+            const [globalBoard, setGlobalBoard] = useState([]);
+
+            useEffect(() => {
+                document.body.className = isDark ? 'theme-dark' : 'theme-light';
+            }, [isDark]);
+
+            useEffect(() => {
+                if (!window.db || !window.dbUtils) return;
+                const { ref, onValue, query, orderByChild } = window.dbUtils;
+                onValue(query(ref(window.db, 'scores'), orderByChild('score')), (snap) => {
+                    if (snap.val()) setGlobalBoard(Object.values(snap.val()).sort((a, b) => b.score - a.score));
+                });
+            }, []);
+
+            const nextQuestion = () => {
+                const keys = Object.keys(vocabData);
+                const word = keys[Math.floor(Math.random() * keys.length)];
+                const correct = vocabData[word];
+                let choices = [correct];
+                while(choices.length < 4) {
+                    const r = Object.values(vocabData)[Math.floor(Math.random() * Object.values(vocabData).length)];
+                    if(!choices.includes(r)) choices.push(r);
+                }
+                setOptions(choices.sort(() => Math.random() - 0.5));
+                setCurrentWord(word);
+                setCorrectChoice(correct);
+                setAnswered(false);
+            };
+
+            const startGame = (mode) => {
+                if (mode === 'RANKED' && !playerName.trim()) return alert("กรุณาใส่ชื่อเพื่อจัดอันดับครับ");
+                setIsPractice(mode === 'PRACTICE');
+                setScore(0);
+                nextQuestion();
+                setView('PLAY');
+            };
+
+            const handleAnswer = (choice) => {
+                if (answered) return;
+                setAnswered(true);
+                if (choice === correctChoice) {
+                    setScore(s => s + 1);
+                    setTimeout(nextQuestion, 600);
+                } else {
+                    if (!isPractice && window.db && score > 0) {
+                        const { ref, push, set } = window.dbUtils;
+                        set(push(ref(window.db, 'scores')), { name: playerName, score, timestamp: Date.now() });
+                    }
+                    setTimeout(() => setView('GAMEOVER'), 1000);
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <button onClick={() => setShowSetting(true)} className="fixed top-6 left-6 z-50 w-12 h-12 glass rounded-full flex items-center justify-center text-xl shadow-lg">⚙️</button>
+
+                    {view === 'MENU' && (
+                        <div className="w-full max-w-md glass p-10 rounded-[3rem] text-center anim-in">
+                            <h1 className="text-4xl font-black mb-8 tracking-widest text-sky-500"> Vocab Quiz</h1>
+                            <input className="w-full p-5 bg-white/5 rounded-2xl mb-4 text-center text-xl font-bold border border-white/10 text-white" placeholder="ใส่ชื่อของคุณ" value={playerName} onChange={e => setPlayerName(e.target.value)} />
+                            <div className="grid gap-3">
+                                <button onClick={() => startGame('RANKED')} className="w-full py-5 btn-primary rounded-2xl font-black text-xl shadow-xl transition-transform hover:scale-105 active:scale-95">RANKED PLAY</button>
+                                <button onClick={() => startGame('PRACTICE')} className="w-full py-5 bg-white/10 rounded-2xl font-black text-xl text-white border border-white/10 hover:bg-white/20 transition-all">PRACTICE (ไม่บันทึกคะแนน)</button>
+                            </div>
+                            <button onClick={() => setShowRanking(true)} className="mt-8 block w-full text-yellow-400 font-bold hover:underline">🏆 LEADERBOARD</button>
+                        </div>
+                    )}
+
+                    {view === 'PLAY' && (
+                        <div className="w-full max-w-xl text-center anim-in">
+                            <div className="flex justify-between mb-8 px-4 font-bold text-white">
+                                <span className="opacity-60">{isPractice ? "🛠 โหมดฝึกซ้อม" : playerName}</span>
+                                <span className="text-2xl text-red-500">SCORE: {score}</span>
+                            </div>
+                            <div className="glass p-10 rounded-[3rem] shadow-2xl border-white/20">
+                                <h2 className="text-5xl font-black mb-12 text-white drop-shadow-md">{currentWord}</h2>
+                                <div className="grid gap-4">
+                                    {options.map((opt, i) => (
+                                        <button key={i} onClick={() => handleAnswer(opt)} className={`p-5 rounded-2xl border-2 font-bold text-lg transition-all ${answered ? (opt === correctChoice ? 'bg-emerald-500 border-emerald-400 text-white scale-105' : 'opacity-20 text-white') : 'hover:border-sky-500 text-white hover:bg-white/5 active:bg-sky-900'}`}>{opt}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'GAMEOVER' && (
+                        <div className="w-full max-w-md glass p-12 rounded-[3rem] text-center anim-in text-white shadow-2xl">
+                            <h2 className="text-3xl font-black text-red-500 mb-2 uppercase tracking-tighter">จบเกม!</h2>
+                            <div className="text-8xl font-black mb-10 text-sky-500 drop-shadow-lg">{score}</div>
+                            <button onClick={() => setView('MENU')} className="w-full py-5 btn-primary rounded-2xl font-black text-2xl shadow-lg">กลับหน้าหลัก</button>
+                        </div>
+                    )}
+
+                    {showSetting && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md" onClick={() => setShowSetting(false)}>
+                            <div className="w-80 glass p-8 rounded-3xl text-white border border-white/20 shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <h3 className="text-xl font-bold mb-6 text-center text-sky-400">SETTINGS</h3>
+                                <button onClick={() => setIsDark(!isDark)} className="w-full py-4 bg-white/10 rounded-xl mb-4 font-bold">{isDark ? '🌙 DARK MODE' : '☀️ LIGHT MODE'}</button>
+                                <button onClick={() => setShowSetting(false)} className="w-full py-4 bg-sky-600 rounded-xl font-black shadow-lg">CLOSE</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showRanking && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4" onClick={() => setShowRanking(false)}>
+                            <div className="w-full max-w-md glass rounded-[2.5rem] h-[70vh] overflow-hidden flex flex-col text-white shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <div className="bg-sky-600 p-6 text-center font-black text-2xl italic tracking-widest">RANKING</div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                    {globalBoard.length > 0 ? globalBoard.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${i < 3 ? 'bg-yellow-500 text-black' : 'bg-white/10 text-white'}`}>{i+1}</span>
+                                                <span className="font-bold text-lg">{e.name}</span>
+                                            </div>
+                                            <span className="text-sky-400 font-black text-xl">{e.score}</span>
+                                        </div>
+                                    )) : <div className="text-center opacity-40 mt-10">ยังไม่มีข้อมูลคะแนน</div>}
+                                </div>
+                                <button onClick={() => setShowRanking(false)} className="p-5 bg-white/5 font-black text-red-400 hover:bg-white/10">CLOSE</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
