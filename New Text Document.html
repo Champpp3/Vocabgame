@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOCAB QUIZ - STEM Edition</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, query, orderByChild, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoWDTu7AsocJiDO3pmmnt_mQuLVeCBHFE",
+            authDomain: "vocab-fire-project.firebaseapp.com",
+            databaseURL: "https://vocab-fire-project-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "vocab-fire-project",
+            storageBucket: "vocab-fire-project.firebasestorage.app",
+            messagingSenderId: "431918734336",
+            appId: "1:431918734336:web:bb98ee795f635c0b09a259"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+            window.db = db;
+            window.dbUtils = { ref, set, onValue, push, query, orderByChild, get };
+        } catch (e) { window.db = null; }
+    </script>
+
+    <style>
+        body { font-family: 'Kanit', sans-serif; transition: all 0.3s ease; overflow: hidden; }
+        .theme-dark { background: #020617; color: white; }
+        .theme-light { background: #f0f9ff; color: #0f172a; }
+        .glass { backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .theme-dark .glass { background: rgba(15, 23, 42, 0.8); }
+        .theme-light .glass { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.1); }
+        .btn-primary { background: linear-gradient(to right, #0284c7, #06b6d4); color: white; }
+        .rainbow-text {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-move 5s ease infinite;
+        }
+        @keyframes rainbow-move { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .footer-credit { position: fixed; bottom: 10px; left: 10px; font-size: 14px; z-index: 9999; }
+        .anim-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="theme-dark">
+    <div id="root"></div>
+    <div class="footer-credit"><span class="rainbow-text font-black text-lg">ใช้ Gemini ทำ</span></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const vocabData = {
+            "immersive": "ที่ดื่มด่ำ/สมจริง",
+            "phenomenon": "ปรากฏการณ์",
+            "entails": "ส่งผลให้เกิด/เกี่ยวข้องกับ",
+            "summit": "ยอดเขา/การประชุมสุดยอด",
+            "Institute": "สถาบัน",
+            "examined": "ถูกตรวจสอบ/พิจารณา",
+            "outbreak": "การระบาด",
+            "spread": "แพร่กระจาย",
+            "strategy": "กลยุทธ์",
+            "regulation": "กฎระเบียบ/ข้อบังคับ",
+            "moreover": "ยิ่งไปกว่านั้น",
+            "as well": "เช่นกัน",
+            "composite": "ที่ประกอบขึ้นจากหลายส่วน",
+            "union": "สหภาพ/การรวมตัว",
+            "tackle": "จัดการกับปัญหา",
+            "dread": "ความหวาดกลัว",
+            "nonetheless": "อย่างไรก็ตาม",
+            "possessing": "การครอบครอง",
+            "pale": "ซีดเผือด",
+            "humid": "ชื้น",
+            "avid": "กระตือรือร้น",
+            "ridiculous": "น่าหัวเราะเยาะ/ไร้สาระ",
+            "reconsider": "พิจารณาใหม่",
+            "refrain": "ละเว้น/ระงับ",
+            "reassess": "ประเมินใหม่",
+            "rethink": "คิดใหม่",
+            "consent": "การยินยอม",
+            "endeavor": "ความพยายาม",
+            "attempt": "พยายาม",
+            "progress": "ความก้าวหน้า",
+            "dismiss": "ไล่ออก/ยกเลิก",
+            "bother": "รบกวน/ทำให้รำคาญ",
+            "implication": "ความหมายแฝง/การพัวพัน",
+            "assume": "สันนิษฐาน/ทึกทัก",
+            "belong": "เป็นของ/สังกัด",
+            "abortion": "การทำแท้ง",
+            "contraceptive": "ยาคุมกำเนิด",
+            "performed": "กระทำ/แสดง",
+            "radicalism": "หัวรุนแรง",
+            "catastrophic": "หายนะ",
+            "throughout": "โดยตลอด/ทั่วทั้ง",
+            "discovered": "ถูกค้นพบ",
+            "deplete": "ทำให้ลดลง/สูญเสีย",
+            "depleting": "การทำให้หมดสิ้นไป",
+            "disastrous": "ซึ่งก่อให้เกิดหายนะ",
+            "Dump": "ทิ้งลง/เทขยะ",
+            "profess": "ประกาศ/ยอมรับ",
+            "falsehood": "ความเป็นเท็จ/เรื่องโกหก",
+            "spouse": "คู่สมรส",
+            "feign": "เสแสร้ง/แกล้งทำ",
+            "interactions": "การปฏิสัมพันธ์",
+            "spare": "สำรอง/ที่เหลือเฟือ",
+            "deception": "การหลอกลวง",
+            "preoccupation": "ความหมกมุ่น/ความกังวล",
+            "prevarication": "การพูดเลี่ยงความจริง",
+            "shaping": "การปรับแต่ง/การสร้างรูปทรง",
+            "suit": "เหมาะสม/ถูกใจ (V.)",
+            "definitions": "นิยาม/คำจำกัดความ",
+            "phrase": "วลี/สำนวน",
+            "sake": "ผลประโยชน์/เพื่อเห็นแก่...",
+            "widespread": "แพร่หลาย/กว้างขวาง",
+            "unethical": "ไร้ศีลธรรม",
+            "inoculate": "ฉีดวัคซีน/ปลูกฝี",
+            "obesity": "โรคอ้วน",
+            "alleged": "ที่ถูกกล่าวหา",
+            "culprit": "จำเลย/ผู้กระทำผิด",
+            "injection": "การฉีดยา",
+            "disguise": "ปลอมตัว/ปิดบัง",
+            "penetrate": "เจาะทะลุ/แทรกซึม",
+            "conceal": "ปกปิด/ซ่อน",
+            "deviate": "เบี่ยงเบน/ออกนอกลู่นอกทาง",
+            "blankets": "ที่ครอบคลุมทั้งหมด (Adj.)",
+            "settlers": "ผู้ตั้งถิ่นฐาน",
+            "nobles": "ขุนนาง/ชั้นสูง",
+            "congested": "แออัด/ติดขัด",
+            "immigrants": "ผู้อพยพ",
+            "heavenly": "ที่เหมือนสวรรค์/วิเศษ",
+            "seduce": "ดึงดูด/ล่อลวง",
+            "ornamental": "ที่ใช้ประดับตกแต่ง",
+            "repel": "ขับไล่/ต้านทาน",
+            "antagonistic": "ซึ่งเป็นปรปักษ์",
+            "distract": "ทำให้วอกแวก",
+            "adventurous": "ที่ชอบผจญภัย",
+            "oppress": "กดขี่/ข่มเหง"
+
+        };
+
+        function App() {
+            const [view, setView] = useState('MENU');
+            const [isDark, setIsDark] = useState(true);
+            const [showSetting, setShowSetting] = useState(false);
+            const [isPractice, setIsPractice] = useState(false);
+            const [showRanking, setShowRanking] = useState(false);
+            const [playerName, setPlayerName] = useState('');
+            const [score, setScore] = useState(0);
+            const [currentWord, setCurrentWord] = useState(null);
+            const [options, setOptions] = useState([]);
+            const [answered, setAnswered] = useState(false);
+            const [correctChoice, setCorrectChoice] = useState(null);
+            const [globalBoard, setGlobalBoard] = useState([]);
+
+            // ระบบเสียง
+            const playGameOver = () => {
+                const audio = new Audio('gameover.mp3');
+                audio.play().catch(e => console.log("Audio play blocked"));
+            };
+
+            useEffect(() => {
+                document.body.className = isDark ? 'theme-dark' : 'theme-light';
+            }, [isDark]);
+
+            useEffect(() => {
+                if (!window.db || !window.dbUtils) return;
+                const { ref, onValue, query, orderByChild } = window.dbUtils;
+                onValue(query(ref(window.db, 'scores'), orderByChild('score')), (snap) => {
+                    if (snap.val()) setGlobalBoard(Object.values(snap.val()).sort((a, b) => b.score - a.score));
+                });
+            }, []);
+
+            const nextQuestion = () => {
+                const keys = Object.keys(vocabData);
+                const word = keys[Math.floor(Math.random() * keys.length)];
+                const correct = vocabData[word];
+                let choices = [correct];
+                while(choices.length < 4) {
+                    const r = Object.values(vocabData)[Math.floor(Math.random() * Object.values(vocabData).length)];
+                    if(!choices.includes(r)) choices.push(r);
+                }
+                setOptions(choices.sort(() => Math.random() - 0.5));
+                setCurrentWord(word);
+                setCorrectChoice(correct);
+                setAnswered(false);
+            };
+
+            const startGame = (mode) => {
+                if (mode === 'RANKED' && !playerName.trim()) return alert("กรุณาใส่ชื่อเพื่อจัดอันดับครับ");
+                setIsPractice(mode === 'PRACTICE');
+                setScore(0);
+                nextQuestion();
+                setView('PLAY');
+            };
+
+            const handleAnswer = (choice) => {
+                if (answered) return;
+                setAnswered(true);
+                if (choice === correctChoice) {
+                    setScore(s => s + 1);
+                    setTimeout(nextQuestion, 600);
+                } else {
+                    playGameOver(); // เล่นเสียงเมื่อตอบผิด
+                    if (!isPractice && window.db && score > 0) {
+                        const { ref, push, set } = window.dbUtils;
+                        set(push(ref(window.db, 'scores')), { name: playerName, score, timestamp: Date.now() });
+                    }
+                    setTimeout(() => setView('GAMEOVER'), 1000);
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <button onClick={() => setShowSetting(true)} className="fixed top-6 left-6 z-50 w-12 h-12 glass rounded-full flex items-center justify-center text-xl shadow-lg">⚙️</button>
+
+                    {view === 'MENU' && (
+                        <div className="w-full max-w-md glass p-10 rounded-[3rem] text-center anim-in">
+                            <h1 className="text-4xl font-black mb-8 tracking-widest text-sky-500"> Vocab Quiz</h1>
+                            <input className="w-full p-5 bg-white/5 rounded-2xl mb-4 text-center text-xl font-bold border border-white/10 text-white" placeholder="ใส่ชื่อของคุณ" value={playerName} onChange={e => setPlayerName(e.target.value)} />
+                            <div className="grid gap-3">
+                                <button onClick={() => startGame('RANKED')} className="w-full py-5 btn-primary rounded-2xl font-black text-xl shadow-xl transition-transform hover:scale-105 active:scale-95">RANKED PLAY</button>
+                                <button onClick={() => startGame('PRACTICE')} className="w-full py-5 bg-white/10 rounded-2xl font-black text-xl text-white border border-white/10 hover:bg-white/20 transition-all">PRACTICE (ไม่บันทึกคะแนน)</button>
+                            </div>
+                            <button onClick={() => setShowRanking(true)} className="mt-8 block w-full text-yellow-400 font-bold hover:underline">🏆 LEADERBOARD</button>
+                        </div>
+                    )}
+
+                    {view === 'PLAY' && (
+                        <div className="w-full max-w-xl text-center anim-in">
+                            <div className="flex justify-between mb-8 px-4 font-bold text-white">
+                                <span className="opacity-60">{isPractice ? "🛠 โหมดฝึกซ้อม" : playerName}</span>
+                                <span className="text-2xl text-red-500">SCORE: {score}</span>
+                            </div>
+                            <div className="glass p-10 rounded-[3rem] shadow-2xl border-white/20">
+                                <h2 className="text-5xl font-black mb-12 text-white drop-shadow-md">{currentWord}</h2>
+                                <div className="grid gap-4">
+                                    {options.map((opt, i) => (
+                                        <button key={i} onClick={() => handleAnswer(opt)} className={`p-5 rounded-2xl border-2 font-bold text-lg transition-all ${answered ? (opt === correctChoice ? 'bg-emerald-500 border-emerald-400 text-white scale-105' : 'opacity-20 text-white') : 'hover:border-sky-500 text-white hover:bg-white/5 active:bg-sky-900'}`}>{opt}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'GAMEOVER' && (
+                        <div className="w-full max-w-md glass p-12 rounded-[3rem] text-center anim-in text-white shadow-2xl">
+                            <h2 className="text-3xl font-black text-red-500 mb-2 uppercase tracking-tighter">จบเกม!</h2>
+                            <div className="text-8xl font-black mb-10 text-sky-500 drop-shadow-lg">{score}</div>
+                            <button onClick={() => setView('MENU')} className="w-full py-5 btn-primary rounded-2xl font-black text-2xl shadow-lg">กลับหน้าหลัก</button>
+                        </div>
+                    )}
+
+                    {showSetting && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md" onClick={() => setShowSetting(false)}>
+                            <div className="w-80 glass p-8 rounded-3xl text-white border border-white/20 shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <h3 className="text-xl font-bold mb-6 text-center text-sky-400">SETTINGS</h3>
+                                <button onClick={() => setIsDark(!isDark)} className="w-full py-4 bg-white/10 rounded-xl mb-4 font-bold">{isDark ? '🌙 DARK MODE' : '☀️ LIGHT MODE'}</button>
+                                <button onClick={() => setShowSetting(false)} className="w-full py-4 bg-sky-600 rounded-xl font-black shadow-lg">CLOSE</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showRanking && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4" onClick={() => setShowRanking(false)}>
+                            <div className="w-full max-w-md glass rounded-[2.5rem] h-[70vh] overflow-hidden flex flex-col text-white shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <div className="bg-sky-600 p-6 text-center font-black text-2xl italic tracking-widest">RANKING</div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                    {globalBoard.length > 0 ? globalBoard.map((e, i) => (
+                                        <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${i < 3 ? 'bg-yellow-500 text-black' : 'bg-white/10 text-white'}`}>{i+1}</span>
+                                                <span className="font-bold text-lg">{e.name}</span>
+                                            </div>
+                                            <span className="text-sky-400 font-black text-xl">{e.score}</span>
+                                        </div>
+                                    )) : <div className="text-center opacity-40 mt-10">ยังไม่มีข้อมูลคะแนน</div>}
+                                </div>
+                                <button onClick={() => setShowRanking(false)} className="p-5 bg-white/5 font-black text-red-400 hover:bg-white/10">CLOSE</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
